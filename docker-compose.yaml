@@ -1,0 +1,21 @@
+version: "3"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/home/user:cached
+    restart: on-failure
+    command: [ "/bin/bash", "-c", "tail -f /dev/null " ]
+
+  ray:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/home/user:cached
+    ports:
+      - 10001:10001
+      - 8265:8265
+    command: bash -c " ray start --head --dashboard-host 0.0.0.0 --num-cpus=8000 --num-gpus=10000 --include-dashboard true && ray status && serve start -n default  --http-host 0.0.0.0 --http-port 8000 --http-location EveryNode && tail -f /dev/null "

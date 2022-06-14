@@ -1,0 +1,14 @@
+{
+	"extensions": [
+		"ms-python.python",
+		"ms-python.vscode-pylance"
+	],
+	"dockerComposeFile": [
+		"../docker-compose.yml"
+	],
+	"service": "test",
+	// use this instead if you experience issues with vscode's test resolution (e.g. go to tests, start tests from within a test module)
+	// don't forget to adjust the volume mappings of your devcontainer accordingly (see docker-compose.yml)
+	// "workspaceFolder": "/workspace"
+	"workspaceFolder": "/home/user"
+}
