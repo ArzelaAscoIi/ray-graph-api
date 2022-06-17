@@ -5,26 +5,26 @@
 
 # This is default Question Answering pipeline for English with a good embedding-based Retriever and a small, fast Reader
 version: '1.5.0'
-name: 'QuestionAnswering_en'
+# name: 'QuestionAnswering_en'
 
 # This section defines nodes that you want to use in your pipelines. Each node must have a name and a type. You can also set the node's parameters here.
 # The name is up to you, you can give your component a friendly name. You then use components' names when specifying their order in the pipeline.
 # Type is the class name of the component. 
 components:
   - name: DocumentStore
-    type: OpenSearchDocumentStore # The only supported document store in deepset Cloud
-    params: 
-      host: opensearch
-      port: 9200
-      username: admin
-      password: admin
+    type: InMemoryDocumentStore # The only supported document store in deepset Cloud
+    # params: 
+    #   host: opensearch
+    #   port: 9200
+    #   username: admin
+    #   password: admin
   - name: Retriever # Selects the most relevant documents from the document store and passes them on to the Reader
-    type: EmbeddingRetriever # Uses a Transformer model to encode the document and the query
+    type: TfidfRetriever # Uses a Transformer model to encode the document and the query
     params:
       document_store: DocumentStore
-      embedding_model: sentence-transformers/multi-qa-mpnet-base-dot-v1 # Model optimized for semantic search
-      model_format: sentence_transformers
-      top_k: 20 # The number of results to return
+    #   embedding_model: sentence-transformers/multi-qa-mpnet-base-dot-v1 # Model optimized for semantic search
+    #   model_format: sentence_transformers
+    #   top_k: 20 # The number of results to return
   - name: Reader # The component that actually fetches answers from among the 20 documents returned by retriever 
     type: FARMReader # Transformer-based reader, specializes in extractive QA
     params:
@@ -34,8 +34,8 @@ components:
     type: FileTypeClassifier
   - name: TextConverter # Converts files into documents
     type: TextConverter
-  - name: PDFConverter # Converts PDFs into documents
-    type: PDFToTextConverter
+  # - name: PDFConverter # Converts PDFs into documents
+  #   type: PDFToTextConverter
   - name: Preprocessor # Splits documents into smaller ones and cleans them up
     type: PreProcessor
     params:
@@ -57,14 +57,14 @@ pipelines:
   - name: indexing
     nodes:
     # Depending on the file type, we use a Text or PDF converter
-      - name: FileTypeClassifier
-        inputs: [File]
+      # - name: FileTypeClassifier
+      #   inputs: [File]
       - name: TextConverter
-        inputs: [FileTypeClassifier.output_1] # Ensures that this converter receives txt files
-      - name: PDFConverter
-        inputs: [FileTypeClassifier.output_2] # Ensures that this converter receives PDFs
+        inputs: [File] # Ensures that this converter receives txt files
+      # - name: PDFConverter
+        # inputs: [FileTypeClassifier.output_2] # Ensures that this converter receives PDFs
       - name: Preprocessor
-        inputs: [TextConverter, PDFConverter]
+        inputs: [TextConverter]
       - name: Retriever
         inputs: [Preprocessor]
       - name: DocumentStore
