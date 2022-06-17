@@ -19,3 +19,12 @@ services:
       - 10001:10001
       - 8265:8265
     command: bash -c " ray start --head --dashboard-host 0.0.0.0 --num-cpus=8000 --num-gpus=10000 --include-dashboard true && ray status && serve start -n default  --http-host 0.0.0.0 --http-port 8000 --http-location EveryNode && tail -f /dev/null "
+  
+  opensearch:
+    image: "opensearchproject/opensearch:1.2.3"
+    ports:
+      - 9200:9200
+      - 9600:9600
+    restart: on-failure
+    environment:
+      - discovery.type=single-node

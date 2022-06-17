@@ -12,7 +12,12 @@ name: 'QuestionAnswering_en'
 # Type is the class name of the component. 
 components:
   - name: DocumentStore
-    type: DeepsetCloudDocumentStore # The only supported document store in deepset Cloud
+    type: OpenSearchDocumentStore # The only supported document store in deepset Cloud
+    params: 
+      host: opensearch
+      port: 9200
+      username: admin
+      password: admin
   - name: Retriever # Selects the most relevant documents from the document store and passes them on to the Reader
     type: EmbeddingRetriever # Uses a Transformer model to encode the document and the query
     params:
