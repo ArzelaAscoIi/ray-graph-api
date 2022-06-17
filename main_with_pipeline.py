@@ -43,7 +43,7 @@ for node in pipeline_definition["nodes"]:
 for node in pipeline_definition["nodes"]:
     input_names = node["inputs"]
     # Dict of name -> Rayt run result
-    inputs_2 = {input: ray_nodes[input].run.bind() for input in inputs}
+    inputs_2 = {input: ray_nodes[input].run.bind() for input in input_names}
     ray_nodes[node["name"]].run.bind(**inputs_2)
 
 
