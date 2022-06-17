@@ -3,6 +3,9 @@ from haystack.pipelines.base import read_pipeline_config_from_yaml, get_pipeline
 from pathlib import Path
 from ray import serve
 import ray
+from ray.experimental.dag.input_node import InputNode
+from ray.serve.drivers import DAGDriver
+from ray.serve.http_adapters import json_request
 
 ray.init(address="ray://ray:10001", namespace="default")
 serve.start(detached=True)
@@ -39,16 +42,19 @@ for node in pipeline_definition["nodes"]:
     bound_clazz = serve.deployment(instantiated.__class__).bind(**params)
     ray_nodes[name] = bound_clazz
 
-
+with InputNode() as inp:
 for node in pipeline_definition["nodes"]:
     input_names = node["inputs"]
-    # Dict of name -> Rayt run result
-    inputs_2 = {input: ray_nodes[input].run.bind() for input in input_names}
-    ray_nodes[node["name"]].run.bind(**inputs_2)
+        # Dict of name -> Ray run result
+        inputs_2 = {input: ray_nodes[input].run.bind() if input != "Query" else inp[0] for input in input_names}
+        result = ray_nodes[node["name"]].run.bind(**inputs_2)
 
+    serve_dag = DAGDriver.bind(result, http_adapter=json_request)
 
+dag_handle = serve.run(serve_dag)
 
-ray_nodes
+print(ray.get(dag_handle.predict.remote([{"query": "who is Arya?"}])))
+
 # for node, dependencies in pipeline.graph.succ:
 #     instantiated_node = pipeline.components["node"]
 #     # instantiated_node.
